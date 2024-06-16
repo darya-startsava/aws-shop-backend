@@ -1,0 +1,54 @@
+swagger: '2.0'
+info:
+  version: '2024-06-16T15:53:47Z'
+  title: GetProductsApi
+host: kc0ocypw33.execute-api.us-east-1.amazonaws.com
+basePath: /prod
+schemes:
+  - https
+paths:
+  /products:
+    get:
+      summary: Returns a list of products.
+      responses:
+        '200':
+          description: A list of all products
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Product'
+  /products/{id}:
+    get:
+      summary: Returns product by id.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Product details
+          schema:
+            $ref: '#/definitions/Product'
+        '404':
+          description: Product not found
+          schema:
+            $ref: '#/definitions/ErrorMessage'
+          
+definitions:
+  Product:
+    type: object
+    properties:
+      id:
+        type: string
+      title:
+        type: string
+      price:
+        type: number
+      description:
+        type: string
+  ErrorMessage:
+    type: object
+    properties:
+      message:
+        type: string
