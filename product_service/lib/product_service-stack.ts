@@ -18,7 +18,17 @@ export class ProductServiceStack extends cdk.Stack {
       }
     );
 
-    const api = new apigateway.LambdaRestApi(this, "GetProductListApi", {
+    const getProductByIDFunction = new lambda.Function(
+      this,
+      "GetProductByIdFunction",
+      {
+        runtime: lambda.Runtime.NODEJS_20_X,
+        code: lambda.Code.fromAsset("lambda"),
+        handler: "getProductsById.handler",
+      }
+    );
+
+    const api = new apigateway.LambdaRestApi(this, "GetProductsApi", {
       handler: getProductListFunction,
       proxy: false,
     });
@@ -26,11 +36,10 @@ export class ProductServiceStack extends cdk.Stack {
     const productsResource = api.root.addResource("products");
     productsResource.addMethod("GET");
 
-    // The code that defines your stack goes here
-
-    // example resource
-    // const queue = new sqs.Queue(this, 'ProductServiceQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    const productResource = productsResource.addResource("{id}");
+    productResource.addMethod(
+      "GET",
+      new apigateway.LambdaIntegration(getProductByIDFunction)
+    );
   }
 }
