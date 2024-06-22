@@ -1,0 +1,20 @@
+[
+    {
+        "id": "e191e2fd-48a9-40b0-9675-128ee0bcdf47",
+        "description": "1l",
+        "price": 2,
+        "title": "Orange juice"
+    },
+    {
+        "id": "6b92fffd-56f5-44dc-991b-14c4fe18ffb2",
+        "description": "1.5l",
+        "price": 3,
+        "title": "Apple juice"
+    },
+    {
+        "id": "cb1640d5-6efb-4fde-93d2-835b4537128e",
+        "description": "1l",
+        "price": 1,
+        "title": "Water"
+    }
+]
