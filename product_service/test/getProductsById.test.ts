@@ -1,6 +1,6 @@
 import { Context } from "aws-lambda";
 import { handler } from "../lambda/getProductsById";
-import { products } from "../lambda/getProductsList";
+import { products } from "./getProductsList.test";
 
 describe("Product by id handler", () => {
   test("returns  product with statusCode 200 if id is correct", async () => {
