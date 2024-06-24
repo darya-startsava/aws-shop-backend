@@ -1,31 +1,50 @@
+import * as dotenv from "dotenv";
 import { Handler, APIGatewayProxyEvent } from "aws-lambda";
+import { DynamoDB } from "aws-sdk";
 
-const products = [
-  {
-    description: "Short Product Description1",
-    id: "7567ec4b-b10c-48c5-9345-fc73c48a80aa",
-    price: 24,
-    title: "ProductOne",
-  },
-  {
-    description: "Short Product Description7",
-    id: "7567ec4b-b10c-48c5-9345-fc73c48a80a1",
-    price: 15,
-    title: "ProductTitle",
-  },
-  {
-    description: "Short Product Description2",
-    id: "7567ec4b-b10c-48c5-9345-fc73c48a80a3",
-    price: 23,
-    title: "Product",
-  },
-];
+dotenv.config();
+
+const ddb = new DynamoDB.DocumentClient();
 
 export const handler: Handler = async (event: APIGatewayProxyEvent) => {
   const id = event.pathParameters?.id;
-  const product = products.find((i) => i.id === id);
+  let product;
 
-  if (product) {
+  const productParams = {
+    TableName: process.env.PRODUCTS_TABLE!,
+    Key: {
+      id: id,
+    },
+  };
+
+  const stockParams = {
+    TableName: process.env.STOCKS_TABLE!,
+    Key: {
+      product_id: id,
+    },
+  };
+
+  try {
+    product = await Promise.all([
+      ddb.get(productParams).promise(),
+      ddb.get(stockParams).promise(),
+    ]);
+  } catch (err) {
+    console.error(err);
+    return {
+      statusCode: 500,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Credentials": true,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: "Cannot fetch products from DynamoDB",
+      }),
+    };
+  }
+
+  if (product[0].Item) {
     const response = {
       statusCode: 200,
       headers: {
@@ -33,7 +52,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
         "Access-Control-Allow-Credentials": true,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(product),
+      body: JSON.stringify({ ...product[0].Item, count: product[1].Item.count }),
     };
     return response;
   } else {
