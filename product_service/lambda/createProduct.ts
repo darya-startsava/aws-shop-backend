@@ -51,11 +51,25 @@ export const handler: Handler = async (event) => {
     ]);
     return {
       statusCode: 201,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST",
+        'Access-Control-Allow-Headers': 'Content-Type',
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Credentials": true,
+      },
       body: JSON.stringify({ message: "Product was created" }),
     };
   } catch (error) {
     return {
       statusCode: 500,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST",
+        'Access-Control-Allow-Headers': 'Content-Type',
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Credentials": true,
+      },
       body: JSON.stringify({
         message: "Error creating product in DynamoDB",
       }),
