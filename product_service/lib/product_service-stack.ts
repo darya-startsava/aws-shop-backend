@@ -28,6 +28,16 @@ export class ProductServiceStack extends cdk.Stack {
       }
     );
 
+    const createProductFunction = new lambda.Function(
+      this,
+      "CreateProductFunction",
+      {
+        runtime: lambda.Runtime.NODEJS_20_X,
+        code: lambda.Code.fromAsset("lambda"),
+        handler: "createProduct.handler",
+      }
+    );
+
     const api = new apigateway.LambdaRestApi(this, "GetProductsApi", {
       handler: getProductListFunction,
       proxy: false,
@@ -35,6 +45,11 @@ export class ProductServiceStack extends cdk.Stack {
 
     const productsResource = api.root.addResource("products");
     productsResource.addMethod("GET");
+
+    productsResource.addMethod(
+      "POST",
+      new apigateway.LambdaIntegration(createProductFunction)
+    );
 
     const productResource = productsResource.addResource("{id}");
     productResource.addMethod(
