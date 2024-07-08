@@ -6,6 +6,11 @@ import * as sqs from "aws-cdk-lib/aws-sqs";
 import * as lambdaEventSources from "aws-cdk-lib/aws-lambda-event-sources";
 import * as sns from "aws-cdk-lib/aws-sns";
 import * as subscriptions from "aws-cdk-lib/aws-sns-subscriptions";
+import * as dotenv from "dotenv";
+
+dotenv.config();
+
+const email = process.env.EMAIL!;
 
 export class ProductServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -16,7 +21,7 @@ export class ProductServiceStack extends cdk.Stack {
     const createProductTopic = new sns.Topic(this, "CreateProductTopic");
 
     createProductTopic.addSubscription(
-      new subscriptions.EmailSubscription("your-email@example.com")
+      new subscriptions.EmailSubscription(email)
     );
 
     const getProductListFunction = new lambda.Function(
