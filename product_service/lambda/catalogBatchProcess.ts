@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from "uuid";
 import { SQSHandler, SQSEvent, SQSRecord } from "aws-lambda";
 import { DynamoDB } from "aws-sdk";
 
-
 dotenv.config();
 
 const productsTableName = process.env.PRODUCTS_TABLE!;
@@ -40,6 +39,8 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       Item: stock,
     };
 
+    console.log("data:", data);
+
     try {
       await Promise.all([
         ddb.put(productParams).promise(),
@@ -57,6 +58,7 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
         body: JSON.stringify({ message: "Product was created" }),
       };
     } catch (error) {
+      console.log("Error creating product in DynamoDB:", error);
       return {
         statusCode: 500,
         headers: {
@@ -74,6 +76,6 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
   };
 
   const results = await Promise.all(event.Records?.map(createProduct));
-  console.log(results);
+  console.log("results:", results);
   console.log("Products created");
 };

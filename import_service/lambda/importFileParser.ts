@@ -13,7 +13,7 @@ import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 dotenv.config();
 
 const region = process.env.REGION;
-const sqsQueueURL = process.env.CATALOG_ITEMS_QUEUE_URL;
+const sqsQueueURL = process.env.CATALOG_ITEMS_QUEUE_URL!;
 
 const s3Client = new S3Client({ region });
 const sqsClient = new SQSClient({ region });
@@ -40,30 +40,30 @@ export const handler: Handler = async (event) => {
         queue.push(data);
       })
       .on("error", (error) => console.log(error))
-      .on("end", () => {
+      .on("end", async () => {
         console.log("importFileParser finished");
+        console.log("queue:", queue);
+        await Promise.all(
+          queue.map(async (data) => {
+            console.log("Start sending the message...");
+            console.log("data:", data);
+            try {
+              await sqsClient.send(
+                new SendMessageCommand({
+                  QueueUrl: sqsQueueURL,
+                  MessageBody: JSON.stringify(data),
+                })
+              );
+              console.log("The message was sent");
+            } catch (error) {
+              console.log(error);
+            }
+          })
+        );
       });
   } else {
     console.error("No body in dataStream");
   }
-
-  await Promise.all(
-    queue.map(async (data) => {
-      console.log("Start sending the message...");
-      console.log(data);
-      try {
-        await sqsClient.send(
-          new SendMessageCommand({
-            QueueUrl: sqsQueueURL,
-            MessageBody: JSON.stringify(data),
-          })
-        );
-        console.log("The message was sent");
-      } catch (error) {
-        console.log(error);
-      }
-    })
-  );
 
   const newFileName = fileName.replace("uploaded", "parsed");
   console.log("newFileName: ", newFileName);

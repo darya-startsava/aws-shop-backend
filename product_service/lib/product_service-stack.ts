@@ -7,6 +7,7 @@ import * as lambdaEventSources from "aws-cdk-lib/aws-lambda-event-sources";
 import * as sns from "aws-cdk-lib/aws-sns";
 import * as subscriptions from "aws-cdk-lib/aws-sns-subscriptions";
 import * as dotenv from "dotenv";
+import * as iam from "aws-cdk-lib/aws-iam";
 
 dotenv.config();
 
@@ -62,6 +63,13 @@ export class ProductServiceStack extends cdk.Stack {
         code: lambda.Code.fromAsset("lambda"),
         handler: "catalogBatchProcess.handler",
       }
+    );
+
+    catalogBatchProcessFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ["dynamodb:PutItem"],
+        resources: [`arn:aws:dynamodb:${this.region}:${this.account}:table/*`],
+      })
     );
 
     createProductTopic.grantPublish(catalogBatchProcessFunction);
