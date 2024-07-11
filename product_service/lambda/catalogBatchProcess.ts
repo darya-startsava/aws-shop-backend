@@ -2,11 +2,16 @@ import * as dotenv from "dotenv";
 import { v4 as uuidv4 } from "uuid";
 import { SQSHandler, SQSEvent, SQSRecord } from "aws-lambda";
 import { DynamoDB } from "aws-sdk";
+import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
 
 dotenv.config();
 
 const productsTableName = process.env.PRODUCTS_TABLE!;
 const stocksTableName = process.env.STOCKS_TABLE!;
+const region = process.env.REGION!;
+const createProductTopicARN = process.env.CREATE_PRODUCT_TOPIC_ARN!;
+
+const snsClient = new SNSClient({ region });
 
 export const handler: SQSHandler = async (event: SQSEvent) => {
   const ddb = new DynamoDB.DocumentClient();
@@ -46,6 +51,20 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
         ddb.put(productParams).promise(),
         ddb.put(stockParams).promise(),
       ]);
+      const message = `Products have been created! Details: ${JSON.stringify(
+        data
+      )}`;
+      try {
+        const result = await snsClient.send(
+          new PublishCommand({
+            Message: message,
+            TopicArn: createProductTopicARN,
+          })
+        );
+        console.log("Message sent: ", result);
+      } catch (error) {
+        console.error("Error publishing to SNS topic: ", error);
+      }
       return {
         statusCode: 201,
         headers: {

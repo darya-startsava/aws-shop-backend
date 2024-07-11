@@ -36,14 +36,14 @@ export const handler: Handler = async (event) => {
   if (dataStream.Body) {
     (dataStream.Body as Readable)
       .pipe(csv({ strict: true }))
-      .on("data", async (data) => {
+      .on("data", (data) => {
         queue.push(data);
       })
       .on("error", (error) => console.log(error))
       .on("end", async () => {
         console.log("importFileParser finished");
         console.log("queue:", queue);
-        await Promise.all(
+        const processQueuePromises = 
           queue.map(async (data) => {
             console.log("Start sending the message...");
             console.log("data:", data);
@@ -54,12 +54,12 @@ export const handler: Handler = async (event) => {
                   MessageBody: JSON.stringify(data),
                 })
               );
-              console.log("The message was sent");
+              console.log("The message was sent, data:", JSON.stringify(data));
             } catch (error) {
               console.log(error);
             }
           })
-        );
+          await Promise.all(processQueuePromises);
       });
   } else {
     console.error("No body in dataStream");

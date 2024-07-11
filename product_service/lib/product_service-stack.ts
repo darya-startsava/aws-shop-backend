@@ -32,6 +32,7 @@ export class ProductServiceStack extends cdk.Stack {
         runtime: lambda.Runtime.NODEJS_20_X,
         code: lambda.Code.fromAsset("lambda"),
         handler: "getProductsList.handler",
+        timeout: cdk.Duration.seconds(30),
       }
     );
 
@@ -42,6 +43,7 @@ export class ProductServiceStack extends cdk.Stack {
         runtime: lambda.Runtime.NODEJS_20_X,
         code: lambda.Code.fromAsset("lambda"),
         handler: "getProductsById.handler",
+        timeout: cdk.Duration.seconds(30),
       }
     );
 
@@ -52,6 +54,7 @@ export class ProductServiceStack extends cdk.Stack {
         runtime: lambda.Runtime.NODEJS_20_X,
         code: lambda.Code.fromAsset("lambda"),
         handler: "createProduct.handler",
+        timeout: cdk.Duration.seconds(30),
       }
     );
 
@@ -62,6 +65,10 @@ export class ProductServiceStack extends cdk.Stack {
         runtime: lambda.Runtime.NODEJS_20_X,
         code: lambda.Code.fromAsset("lambda"),
         handler: "catalogBatchProcess.handler",
+        timeout: cdk.Duration.seconds(30),
+        environment: {
+          TOPIC_ARN: createProductTopic.topicArn,
+        },
       }
     );
 
@@ -69,6 +76,13 @@ export class ProductServiceStack extends cdk.Stack {
       new iam.PolicyStatement({
         actions: ["dynamodb:PutItem"],
         resources: [`arn:aws:dynamodb:${this.region}:${this.account}:table/*`],
+      })
+    );
+
+    catalogBatchProcessFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ["SNS:Publish"],
+        resources: [createProductTopic.topicArn],
       })
     );
 

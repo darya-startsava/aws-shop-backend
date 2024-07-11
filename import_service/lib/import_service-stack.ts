@@ -29,6 +29,7 @@ export class ImportServiceStack extends cdk.Stack {
         runtime: lambda.Runtime.NODEJS_20_X,
         code: lambda.Code.fromAsset("lambda"),
         handler: "importProductsFile.handler",
+        timeout: cdk.Duration.seconds(30),
       }
     );
 
@@ -51,6 +52,7 @@ export class ImportServiceStack extends cdk.Stack {
         runtime: lambda.Runtime.NODEJS_20_X,
         code: lambda.Code.fromAsset("lambda"),
         handler: "importFileParser.handler",
+        timeout: cdk.Duration.seconds(30),
       }
     );
 
