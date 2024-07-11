@@ -11,6 +11,7 @@
   "license": "ISC",
   "types": "./getProductsById.d.ts",
   "dependencies": {
+    "@aws-sdk/client-sns": "^3.614.0",
     "aws-sdk": "^2.1646.0",
     "dotenv": "^16.4.5"
   },
