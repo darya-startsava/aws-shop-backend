@@ -90,7 +90,7 @@ export class ProductServiceStack extends cdk.Stack {
     catalogItemsQueue.grantSendMessages(catalogBatchProcessFunction);
 
     catalogBatchProcessFunction.addEventSource(
-      new lambdaEventSources.SqsEventSource(catalogItemsQueue)
+      new lambdaEventSources.SqsEventSource(catalogItemsQueue, { batchSize: 5 })
     );
 
     const api = new apigateway.LambdaRestApi(this, "GetProductsApi", {
