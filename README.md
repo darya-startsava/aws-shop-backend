@@ -1,6 +1,6 @@
 # aws-shop-backend
 
-task_6
+task_7
 
 backend for [nodejs-aws-shop-react](https://github.com/darya-startsava/nodejs-aws-shop-react)
 

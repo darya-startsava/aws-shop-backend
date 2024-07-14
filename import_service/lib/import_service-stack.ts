@@ -11,6 +11,7 @@ dotenv.config();
 
 const bucketName = process.env.S3_BUCKET!;
 const catalogItemsQueueArn = process.env.CATALOG_ITEMS_QUEUE_ARN!;
+const basicAuthorizerLambdaArn = process.env.BASIC_AUTHORIZER_LAMBDA_ARN!;
 
 export class ImportServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -42,8 +43,58 @@ export class ImportServiceStack extends cdk.Stack {
       proxy: false,
     });
 
+    const authorizerFunction = lambda.Function.fromFunctionArn(
+      this,
+      "AuthorizerFunction",
+      basicAuthorizerLambdaArn
+    );
+
+    const authorizer = new apigateway.TokenAuthorizer(
+      this,
+      "LambdaAuthorizer",
+      {
+        handler: authorizerFunction,
+        identitySource: apigateway.IdentitySource.header("Authorization"),
+      }
+    );
+
+    const importIntegration = new apigateway.LambdaIntegration(
+      importProductsFileFunction
+    );
+
     const importProductsResource = api.root.addResource("import");
-    importProductsResource.addMethod("GET");
+
+    importProductsResource.addMethod(
+      "GET",
+      importIntegration, 
+      {
+        methodResponses: [
+          {
+            statusCode: "200",
+            responseParameters: {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Credentials": true,
+            },
+          },
+          {
+            statusCode: "401",
+            responseParameters: {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Credentials": true,
+            },
+          },
+          {
+            statusCode: "403",
+            responseParameters: {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Credentials": true,
+            },
+          },
+        ],
+        authorizationType: apigateway.AuthorizationType.CUSTOM,
+        authorizer,
+      }
+    );
 
     const importFileParserFunction = new lambda.Function(
       this,
